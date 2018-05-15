@@ -20,6 +20,7 @@ class ViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		let webView = WKWebView(frame: self.view.bounds)
+		webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 		self.view.addSubview(webView)
 		
 		if let url = TranslateURLCreator().urlWith(targetURL: "http://unicode.org/reports/tr10/") {
