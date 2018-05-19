@@ -21,16 +21,19 @@ class ViewController: UIViewController {
 		super.viewDidLoad()
 		
 		let originalWebView = WKWebView(frame: self.view.bounds)
+		originalWebView.scrollView.delegate = self
+		originalWebView.navigationDelegate = self
 		originalWebView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 		self.view.addSubview(originalWebView)
 		self.originalWebView = originalWebView
 		
 		let translatedWebView = WKWebView(frame: self.view.bounds)
+		translatedWebView.scrollView.delegate = self
 		translatedWebView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 		self.view.addSubview(translatedWebView)
 		self.translatedWebView = translatedWebView
 		
-		self.textField.text = "https://unicode.org/reports/tr10/"
+		self.textField.text = UserDefaults.standard.value(forKey: "URL") as? String ?? "https://unicode.org/reports/tr10/"
 		
 		self.loadURL(urlString: self.textField.text)
 	}
@@ -77,5 +80,23 @@ extension ViewController: UITextFieldDelegate {
 		textField.resignFirstResponder()
 		
 		return true
+	}
+}
+
+extension ViewController: WKNavigationDelegate {
+	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+		UserDefaults.standard.setValue(textField.text, forKey: "URL")
+		UserDefaults.standard.synchronize()
+	}
+}
+
+extension ViewController: UIScrollViewDelegate {
+	func scrollViewDidScroll(_ scrollView: UIScrollView) {
+		switch scrollView {
+		case self.translatedWebView.scrollView:
+			self.originalWebView.scrollView.contentOffset = scrollView.contentOffset
+		default:
+			self.translatedWebView.scrollView.contentOffset = scrollView.contentOffset
+		}
 	}
 }
