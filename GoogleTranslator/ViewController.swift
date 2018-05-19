@@ -10,39 +10,72 @@ import UIKit
 import WebKit
 
 class ViewController: UIViewController {
-
+	
 	@IBOutlet weak var textField: UITextField!
 	
-	var webView: WKWebView? {
-		return self.view.subviews.first as? WKWebView
-	}
+	var translatedWebView: WKWebView!
+	
+	var originalWebView: WKWebView!
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		let webView = WKWebView(frame: self.view.bounds)
-		webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-		self.view.addSubview(webView)
 		
-		if let url = TranslateURLCreator().urlWith(targetURL: "http://unicode.org/reports/tr10/") {
-			webView.load(URLRequest(url: url))
-		}
+		let originalWebView = WKWebView(frame: self.view.bounds)
+		originalWebView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+		self.view.addSubview(originalWebView)
+		self.originalWebView = originalWebView
+		
+		let translatedWebView = WKWebView(frame: self.view.bounds)
+		translatedWebView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+		self.view.addSubview(translatedWebView)
+		self.translatedWebView = translatedWebView
+		
+		self.textField.text = "https://unicode.org/reports/tr10/"
+		
+		self.loadURL(urlString: self.textField.text)
 	}
-
+	
 	override func didReceiveMemoryWarning() {
 		super.didReceiveMemoryWarning()
 		// Dispose of any resources that can be recreated.
 	}
-
+	
+	func loadURL(urlString: String?) {
+		guard let text = self.textField.text else {
+			return
+		}
+		if let url = URL(string: text) {
+			originalWebView.load(URLRequest(url: url))
+		}
+		
+		if let url = TranslateURLCreator().urlWith(targetURL: text) {
+			translatedWebView.load(URLRequest(url: url))
+		}
+	}
+	
 }
 
+
+// MARK: - Segment 영역
+extension ViewController {
+	
+	@IBAction func selectSegment(_ sender: UISegmentedControl) {
+		let originalShow = sender.selectedSegmentIndex == 1
+		UIView.animate(withDuration: 0.26, animations: {
+			self.translatedWebView.alpha = originalShow ? 0.0 : 1.0
+		})
+	}
+	
+}
+
+// MARK: - UITextFieldDelegate
 extension ViewController: UITextFieldDelegate {
 	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-		let url = TranslateURLCreator().urlWith(targetURL: textField.text)
-		guard let requestURL = url else {
-			return false
-		}
+		
+		self.loadURL(urlString: textField.text)
+		
 		textField.resignFirstResponder()
-		webView?.load(URLRequest(url: requestURL))
+		
 		return true
 	}
 }

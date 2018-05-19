@@ -39,7 +39,7 @@
                     <navigationItem key="navigationItem" id="Vwb-jY-1fB">
                         <nil key="title"/>
                         <textField key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" id="DWm-Cp-nLe">
-                            <rect key="frame" x="57.5" y="7" width="260" height="30"/>
+                            <rect key="frame" x="10" y="7" width="260" height="30"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <nil key="textColor"/>
                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -48,6 +48,19 @@
                                 <outlet property="delegate" destination="BYZ-38-t0r" id="uEx-tR-3YR"/>
                             </connections>
                         </textField>
+                        <barButtonItem key="rightBarButtonItem" style="plain" id="mHp-rl-oVN">
+                            <segmentedControl key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="4VK-cX-PaI">
+                                <rect key="frame" x="276" y="7" width="83" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <segments>
+                                    <segment title="번역"/>
+                                    <segment title="원본"/>
+                                </segments>
+                                <connections>
+                                    <action selector="selectSegment:" destination="BYZ-38-t0r" eventType="valueChanged" id="9MO-WU-wRx"/>
+                                </connections>
+                            </segmentedControl>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="textField" destination="DWm-Cp-nLe" id="JqO-sq-RIZ"/>
