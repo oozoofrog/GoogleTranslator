@@ -17,6 +17,8 @@ class ViewController: UIViewController {
 	
 	var originalWebView: WKWebView!
 	
+	var notification: NSObjectProtocol?
+	
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		
@@ -29,6 +31,7 @@ class ViewController: UIViewController {
 		
 		let translatedWebView = WKWebView(frame: self.view.bounds)
 		translatedWebView.scrollView.delegate = self
+		translatedWebView.navigationDelegate = self
 		translatedWebView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 		self.view.addSubview(translatedWebView)
 		self.translatedWebView = translatedWebView
@@ -36,6 +39,21 @@ class ViewController: UIViewController {
 		self.textField.text = UserDefaults.standard.value(forKey: "URL") as? String ?? "https://unicode.org/reports/tr10/"
 		
 		self.loadURL(urlString: self.textField.text)
+		
+		self.notification = NotificationCenter.default.addObserver(forName: Notification.Name.UIApplicationWillResignActive, object: nil, queue: .main) { [weak self] (_) in
+			guard let original = self?.originalWebView, let translated = self?.translatedWebView else {
+				return
+			}
+			UserDefaults.standard.setValue(original.scrollView.contentOffset.y, forKey: "OriginalOffset")
+			UserDefaults.standard.setValue(translated.scrollView.contentOffset.y, forKey: "TranslatedOffset")
+			UserDefaults.standard.synchronize()
+		}
+	}
+	
+	deinit {
+		if let notification = self.notification {
+			NotificationCenter.default.removeObserver(notification)
+		}
 	}
 	
 	override func didReceiveMemoryWarning() {
@@ -43,15 +61,24 @@ class ViewController: UIViewController {
 		// Dispose of any resources that can be recreated.
 	}
 	
+	var urlString: String {
+		return self.textField.text ?? ""
+	}
+	var originalURL: URL? {
+		return URL(string: urlString)
+	}
+	
+	var translateURL: URL? {
+		return TranslateURLCreator().urlWith(targetURL: urlString)
+	}
+	
 	func loadURL(urlString: String?) {
-		guard let text = self.textField.text else {
-			return
-		}
-		if let url = URL(string: text) {
+		
+		if let url = originalURL {
 			originalWebView.load(URLRequest(url: url))
 		}
 		
-		if let url = TranslateURLCreator().urlWith(targetURL: text) {
+		if let url = translateURL {
 			translatedWebView.load(URLRequest(url: url))
 		}
 	}
@@ -85,7 +112,23 @@ extension ViewController: UITextFieldDelegate {
 
 extension ViewController: WKNavigationDelegate {
 	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-		UserDefaults.standard.setValue(textField.text, forKey: "URL")
+		if webView == originalWebView {
+			UserDefaults.standard.setValue(textField.text, forKey: "URL")
+		}
+		
+		switch webView {
+		case originalWebView:
+			if let offset = UserDefaults.standard.value(forKey: "OriginalOffset") as? CGFloat {
+				webView.scrollView.contentOffset = CGPoint(x: 0, y: offset)
+			}
+		case translatedWebView:
+			if let offset = UserDefaults.standard.value(forKey: "TranslatedOffset") as? CGFloat {
+				webView.scrollView.contentOffset = CGPoint(x: 0, y: offset)
+			}
+		default:
+			break
+		}
+		
 		UserDefaults.standard.synchronize()
 	}
 }
