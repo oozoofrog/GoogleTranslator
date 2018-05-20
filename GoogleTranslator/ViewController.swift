@@ -9,7 +9,7 @@
 import UIKit
 import WebKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, Viewer {
 	
 	@IBOutlet weak var textField: UITextField!
 	
@@ -18,6 +18,8 @@ class ViewController: UIViewController {
 	var originalWebView: WKWebView!
 	
 	var notification: NSObjectProtocol?
+	
+	lazy var viewModel: ViewModel = ViewModel()
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
