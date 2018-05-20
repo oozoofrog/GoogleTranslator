@@ -114,22 +114,25 @@ extension ViewController: WKNavigationDelegate {
 	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
 		if webView == originalWebView {
 			UserDefaults.standard.setValue(textField.text, forKey: "URL")
+			UserDefaults.standard.synchronize()
 		}
-		
-		switch webView {
-		case originalWebView:
-			if let offset = UserDefaults.standard.value(forKey: "OriginalOffset") as? CGFloat {
-				webView.scrollView.contentOffset = CGPoint(x: 0, y: offset)
+		DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+			guard let original = self?.originalWebView, let translated = self?.translatedWebView else {
+				return
 			}
-		case translatedWebView:
-			if let offset = UserDefaults.standard.value(forKey: "TranslatedOffset") as? CGFloat {
-				webView.scrollView.contentOffset = CGPoint(x: 0, y: offset)
+			switch webView {
+			case original:
+				if let offset = UserDefaults.standard.value(forKey: "OriginalOffset") as? CGFloat {
+					webView.scrollView.contentOffset = CGPoint(x: 0, y: offset)
+				}
+			case translated:
+				if let offset = UserDefaults.standard.value(forKey: "TranslatedOffset") as? CGFloat {
+					webView.scrollView.contentOffset = CGPoint(x: 0, y: offset)
+				}
+			default:
+				break
 			}
-		default:
-			break
 		}
-		
-		UserDefaults.standard.synchronize()
 	}
 }
 
